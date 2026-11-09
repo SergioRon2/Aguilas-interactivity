@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Gran Aventura del Fútbol - Águilas FC</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            navy: '#002B49',
+                            blue: '#1E88E5',
+                            light: '#E3F2FD',
+                            dark: '#111111',
+                            gold: '#FFD700',
+                            goldDark: '#F59E0B',
+                            accent: '#10B981'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        montserrat: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        .pulse-btn {
+            animation: pulse-slow 2s infinite;
+        }
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .bounce-gentle {
+            animation: bounce-slow 2.5s infinite ease-in-out;
+        }
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .shiny-gold {
+            background: linear-gradient(135deg, #FFE259 0%, #FFA751 100%);
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-800 antialiased min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- APP WRAPPER -->
+    <div id="app-container" class="relative max-w-5xl mx-auto w-full min-h-screen bg-slate-100 flex flex-col justify-between shadow-2xl overflow-hidden border-x-4 border-brand-navy">
+        
+        <!-- HEADER -->
+        <header class="bg-brand-navy text-white px-4 py-3 flex items-center justify-between border-b-4 border-brand-gold shadow-md z-30">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="goToScreen('portada')">
+                <svg class="w-10 h-10 drop-shadow" viewBox="0 0 100 100" fill="none">
+                    <polygon points="50,5 90,25 80,85 50,98 20,85 10,25" fill="#1E88E5" stroke="#FFFFFF" stroke-width="4"/>
+                    <polygon points="50,10 85,28 76,82 50,93 24,82 15,28" fill="#002B49"/>
+                    <path d="M50 20 L65 40 L58 42 L68 55 L50 48 L32 55 L42 42 L35 40 Z" fill="#FFD700" stroke="#FFFFFF" stroke-width="2"/>
+                    <circle cx="50" cy="70" r="12" fill="#FFFFFF" stroke="#000" stroke-width="2"/>
+                    <polygon points="50,64 54,67 53,72 47,72 46,67" fill="#000"/>
+                </svg>
+                <div>
+                    <h1 class="font-montserrat font-black text-lg leading-none tracking-wider text-brand-gold">ÁGUILAS FC</h1>
+                    <span class="text-xs text-blue-200 font-semibold">ESCUELA DE FÚTBOL SUB-5</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 md:gap-4">
+                <div class="bg-slate-900/90 px-3 py-1.5 rounded-full border border-brand-gold flex items-center gap-2 shadow-inner">
+                    <i class="fa-solid fa-star text-amber-400 text-lg transition-transform duration-300 opacity-30" id="star-header-1"></i>
+                    <i class="fa-solid fa-star text-amber-400 text-lg transition-transform duration-300 opacity-30" id="star-header-2"></i>
+                    <i class="fa-solid fa-star text-amber-400 text-lg transition-transform duration-300 opacity-30" id="star-header-3"></i>
+                </div>
+                
+                <button id="sound-btn" onclick="toggleAudio()" class="w-10 h-10 bg-brand-blue hover:bg-blue-600 rounded-full flex items-center justify-center text-white border-2 border-white shadow transition active:scale-95">
+                    <i class="fa-solid fa-volume-high text-lg" id="sound-icon"></i>
+                </button>
+
+                <button onclick="openCoachPanel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-1 shadow border border-emerald-400">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                    <span class="hidden sm:inline">Profe Panel</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN VIEW PORT -->
+        <main id="main-content" class="flex-1 flex flex-col p-4 md:p-6 relative justify-center">
+
+            <!-- 1. PORTADA -->
+            <section id="screen-portada" class="screen-section flex flex-col items-center justify-center text-center py-4 space-y-6">
+                <div class="relative">
+                    <div class="absolute -inset-4 bg-brand-blue/30 rounded-full blur-2xl"></div>
+                    <svg class="w-44 h-44 md:w-56 md:h-56 drop-shadow-2xl relative bounce-gentle" viewBox="0 0 100 100">
+                        <polygon points="50,5 92,25 82,87 50,98 18,87 8,25" fill="#1E88E5" stroke="#FFFFFF" stroke-width="4"/>
+                        <polygon points="50,10 87,28 78,83 50,93 22,83 13,28" fill="#002B49"/>
+                        <path d="M50 18 L68 40 L60 43 L72 58 L50 50 L28 58 L40 43 L32 40 Z" fill="#FFD700" stroke="#FFFFFF" stroke-width="2"/>
+                        <circle cx="50" cy="72" r="14" fill="#FFFFFF" stroke="#111" stroke-width="2.5"/>
+                        <polygon points="50,64 55,68 53,74 47,74 45,68" fill="#111"/>
+                    </svg>
+                </div>
+
+                <div class="space-y-2 max-w-xl">
+                    <span class="inline-block bg-brand-gold text-brand-navy font-black text-xs md:text-sm px-4 py-1.5 rounded-full uppercase tracking-widest shadow">Categoría Niños 4 - 5 Años</span>
+                    <h1 class="font-montserrat text-4xl md:text-5xl font-black text-brand-navy leading-tight uppercase drop-shadow">
+                        LA GRAN AVENTURA <br><span class="text-brand-blue">DEL FÚTBOL</span>
+                    </h1>
+                    <p class="text-lg md:text-2xl font-bold text-amber-700 bg-amber-100 py-2 px-6 rounded-2xl border-2 border-amber-300 inline-block shadow-sm">
+                        ¡Conviértete en un guardián del fútbol! 🦅⚽
+                    </p>
+                </div>
+
+                <div class="pt-2 w-full max-w-md">
+                    <button onclick="playSound('whistle'); goToScreen('bienvenida');" class="pulse-btn w-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-900 font-extrabold text-2xl md:text-3xl py-5 px-8 rounded-3xl shadow-xl border-b-8 border-amber-800 flex items-center justify-center gap-4 transition active:translate-y-1">
+                        <i class="fa-solid fa-play text-slate-900 text-3xl"></i>
+                        <span>¡COMENZAR!</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 2. BIENVENIDA -->
+            <section id="screen-bienvenida" class="screen-section hidden flex flex-col items-center justify-center space-y-6 max-w-3xl mx-auto w-full">
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-xl border-4 border-brand-blue relative w-full">
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <div class="flex-shrink-0 text-center">
+                            <div class="w-36 h-36 md:w-44 md:h-44 bg-gradient-to-b from-blue-100 to-blue-200 rounded-full border-4 border-brand-navy flex items-center justify-center relative shadow-inner overflow-hidden">
+                                <svg class="w-32 h-32" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="45" fill="#1E88E5"/>
+                                    <path d="M20 50 Q50 15 80 50 Q50 90 20 50" fill="#002B49"/>
+                                    <polygon points="50,45 75,55 50,70" fill="#FFD700" stroke="#D97706" stroke-width="2"/>
+                                    <circle cx="40" cy="40" r="8" fill="#FFF"/>
+                                    <circle cx="42" cy="40" r="4" fill="#000"/>
+                                    <circle cx="60" cy="40" r="8" fill="#FFF"/>
+                                    <circle cx="58" cy="40" r="4" fill="#000"/>
+                                    <circle cx="50" cy="85" r="4" fill="#EF4444"/>
+                                </svg>
+                            </div>
+                            <span class="inline-block mt-2 font-black text-brand-navy text-base bg-blue-100 px-3 py-0.5 rounded-full border border-blue-300">Águilito El Entrenador</span>
+                        </div>
+
+                        <div class="space-y-4 text-center md:text-left flex-1">
+                            <div class="bg-amber-100 border-l-4 border-amber-500 p-2.5 rounded-r-xl inline-block">
+                                <p class="text-xs font-bold text-amber-800 uppercase">¡Bienvenido al Equipo Águilas FC!</p>
+                            </div>
+                            <h2 class="text-2xl md:text-3xl font-extrabold text-brand-navy">
+                                ¡Hola Pequeño Guardián!
+                            </h2>
+                            <p class="text-slate-700 text-base md:text-lg leading-relaxed font-medium">
+                                Para ser un <strong>GUARDIÁN DEL FÚTBOL</strong> debes superar <strong>3 misiones divertidas</strong> en la cancha digital. ¡Usa tu dedo o el mouse para jugar y ganar las 3 Estrellas Doradas!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 w-full max-w-md">
+                    <button onclick="playSound('click'); goToScreen('mapa');" class="w-full bg-brand-blue hover:bg-blue-700 text-white font-extrabold text-xl py-4 px-6 rounded-2xl shadow-lg border-b-4 border-blue-950 flex items-center justify-center gap-3 active:translate-y-0.5">
+                        <span>¡VER MAPA DE LA AVENTURA!</span>
+                        <i class="fa-solid fa-map-location-dot text-2xl"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 3. MAPA DE LA AVENTURA -->
+            <section id="screen-mapa" class="screen-section hidden flex flex-col items-center justify-between space-y-6">
+                <div class="text-center space-y-1">
+                    <h2 class="text-3xl font-black text-brand-navy uppercase">MAPA DE LA AVENTURA</h2>
+                    <p class="text-slate-700 font-semibold">Toca la misión desbloqueada para jugar</p>
+                </div>
+
+                <div class="relative w-full max-w-2xl bg-emerald-600 p-6 md:p-8 rounded-3xl border-4 border-emerald-800 shadow-2xl">
+                    <div class="absolute inset-0 border-4 border-white/30 m-4 rounded-2xl pointer-events-none"></div>
+
+                    <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 my-4">
+                        
+                        <!-- Node 1 -->
+                        <div id="map-node-1" onclick="startMission(1)" class="cursor-pointer group flex flex-col items-center">
+                            <div class="w-28 h-28 rounded-2xl bg-white border-4 border-brand-blue flex flex-col items-center justify-center shadow-lg transform transition group-hover:scale-105 relative">
+                                <span class="absolute -top-3 bg-brand-navy text-white text-xs font-bold px-2.5 py-0.5 rounded-full">Misión 1</span>
+                                <i class="fa-solid fa-shoe-prints text-3xl text-brand-blue my-1"></i>
+                                <span class="text-xs font-extrabold text-slate-800 text-center leading-tight">Las Huellas</span>
+                                <div id="map-star-1" class="hidden absolute -bottom-3 bg-amber-400 text-slate-900 rounded-full p-1.5 shadow border border-white">
+                                    <i class="fa-solid fa-star text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hidden md:block text-white/70 text-2xl"><i class="fa-solid fa-arrow-right-long"></i></div>
+                        <div class="md:hidden text-white/70 text-2xl"><i class="fa-solid fa-arrow-down-long"></i></div>
+
+                        <!-- Node 2 -->
+                        <div id="map-node-2" onclick="startMission(2)" class="cursor-pointer group flex flex-col items-center opacity-60">
+                            <div id="map-card-2" class="w-28 h-28 rounded-2xl bg-slate-200 border-4 border-slate-400 flex flex-col items-center justify-center shadow-lg transform transition group-hover:scale-105 relative">
+                                <span class="absolute -top-3 bg-slate-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">Misión 2</span>
+                                <i id="map-icon-2" class="fa-solid fa-lock text-3xl text-slate-500 my-1"></i>
+                                <span class="text-xs font-extrabold text-slate-700 text-center leading-tight">Pase al Nido</span>
+                                <div id="map-star-2" class="hidden absolute -bottom-3 bg-amber-400 text-slate-900 rounded-full p-1.5 shadow border border-white">
+                                    <i class="fa-solid fa-star text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hidden md:block text-white/70 text-2xl"><i class="fa-solid fa-arrow-right-long"></i></div>
+                        <div class="md:hidden text-white/70 text-2xl"><i class="fa-solid fa-arrow-down-long"></i></div>
+
+                        <!-- Node 3 -->
+                        <div id="map-node-3" onclick="startMission(3)" class="cursor-pointer group flex flex-col items-center opacity-60">
+                            <div id="map-card-3" class="w-28 h-28 rounded-2xl bg-slate-200 border-4 border-slate-400 flex flex-col items-center justify-center shadow-lg transform transition group-hover:scale-105 relative">
+                                <span class="absolute -top-3 bg-slate-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">Misión 3</span>
+                                <i id="map-icon-3" class="fa-solid fa-lock text-3xl text-slate-500 my-1"></i>
+                                <span class="text-xs font-extrabold text-slate-700 text-center leading-tight">Guardianes</span>
+                                <div id="map-star-3" class="hidden absolute -bottom-3 bg-amber-400 text-slate-900 rounded-full p-1.5 shadow border border-white">
+                                    <i class="fa-solid fa-star text-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="flex gap-4 w-full max-w-md">
+                    <button onclick="goToScreen('portada')" class="bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold px-5 py-3.5 rounded-xl">
+                        <i class="fa-solid fa-house text-xl"></i>
+                    </button>
+                    <button id="btn-next-available" onclick="startCurrentUnlockedMission()" class="flex-1 bg-brand-navy hover:bg-blue-900 text-white font-extrabold py-3.5 px-6 rounded-xl shadow-lg border-b-4 border-slate-950 flex items-center justify-center gap-2">
+                        <span>JUGAR MISIÓN</span>
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </div>
+            </section>
+
+
+            <!-- 4. MISIÓN 1 MINI-GAME: EL CAMINO DE LAS HUELLAS -->
+            <section id="screen-mision1" class="screen-section hidden flex flex-col space-y-4">
+                <div class="bg-brand-navy text-white p-3.5 rounded-2xl shadow flex items-center justify-between border-l-8 border-brand-gold">
+                    <div>
+                        <span class="text-amber-400 text-xs font-extrabold uppercase">MISIÓN 1</span>
+                        <h2 class="text-xl md:text-2xl font-black leading-none">EL CAMINO DE LAS HUELLAS</h2>
+                        <p class="text-xs text-blue-200 mt-0.5">Realiza el zigzag pasando por todos los checkpoints marcados 🎯 antes de tocar la estrella</p>
+                    </div>
+                    <button onclick="speakInstruction('Conduce el balón en zigzag pasando por cada uno de los checkpoints dorados entre los conos hasta llegar a la estrella!')" class="bg-brand-blue p-2.5 rounded-xl text-white hover:bg-blue-600 transition">
+                        <i class="fa-solid fa-volume-high text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- GAME CANVAS 1 -->
+                <div class="relative w-full bg-emerald-700 rounded-2xl border-4 border-emerald-900 shadow-2xl overflow-hidden flex flex-col items-center justify-center min-h-[380px]">
+                    <canvas id="canvas-mision1" class="w-full h-[380px] rounded-xl cursor-grab"></canvas>
+                    <div id="m1-msg" class="absolute top-4 bg-white/95 text-brand-navy font-extrabold px-4 py-1.5 rounded-full text-xs md:text-sm shadow-lg border border-brand-blue">
+                        👇 Arrastra el balón y pasa por el Checkpoint 1
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- 5. MISIÓN 2 MINI-GAME: EL PASE AL NIDO -->
+            <section id="screen-mision2" class="screen-section hidden flex flex-col space-y-4">
+                <div class="bg-brand-navy text-white p-3.5 rounded-2xl shadow flex items-center justify-between border-l-8 border-brand-gold">
+                    <div>
+                        <span class="text-amber-400 text-xs font-extrabold uppercase">MISIÓN 2</span>
+                        <h2 class="text-xl md:text-2xl font-black leading-none">EL PASE AL NIDO</h2>
+                        <p class="text-xs text-blue-200 mt-0.5">¡Haz clic o toca la pantalla para apurar el tiro directamente al nido del águila!</p>
+                    </div>
+                    <div class="bg-amber-400 text-slate-900 font-black px-3 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
+                        <span>Pases:</span>
+                        <span id="m2-score" class="text-base">0/3</span>
+                    </div>
+                </div>
+
+                <!-- GAME CANVAS 2 -->
+                <div class="relative w-full bg-emerald-700 rounded-2xl border-4 border-emerald-900 shadow-2xl overflow-hidden flex flex-col items-center justify-center min-h-[380px]">
+                    <canvas id="canvas-mision2" class="w-full h-[380px] rounded-xl cursor-pointer"></canvas>
+                    <div id="m2-msg" class="absolute top-4 bg-white/95 text-brand-navy font-extrabold px-4 py-1.5 rounded-full text-xs md:text-sm shadow-lg border border-brand-blue">
+                        🎯 ¡Toca la pantalla para hacer el pase perfecto!
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- 6. MISIÓN 3 MINI-GAME: GUARDIANES DEL EQUIPO -->
+            <section id="screen-mision3" class="screen-section hidden flex flex-col space-y-4">
+                <div class="bg-brand-navy text-white p-3.5 rounded-2xl shadow flex items-center justify-between border-l-8 border-brand-gold">
+                    <div>
+                        <span class="text-amber-400 text-xs font-extrabold uppercase">MISIÓN 3</span>
+                        <h2 class="text-xl md:text-2xl font-black leading-none">GUARDIANES DEL EQUIPO</h2>
+                        <p class="text-xs text-blue-200 mt-0.5">Arrastra cada balón a su aro de color (¡Las posiciones cambian cada partida!)</p>
+                    </div>
+                    <div class="bg-emerald-500 text-white font-black px-3 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
+                        <span>Aros:</span>
+                        <span id="m3-score" class="text-base">0/4</span>
+                    </div>
+                </div>
+
+                <!-- GAME CANVAS 3 -->
+                <div class="relative w-full bg-emerald-700 rounded-2xl border-4 border-emerald-900 shadow-2xl overflow-hidden flex flex-col items-center justify-center min-h-[380px]">
+                    <canvas id="canvas-mision3" class="w-full h-[380px] rounded-xl cursor-grab"></canvas>
+                    <div id="m3-msg" class="absolute top-4 bg-white/95 text-brand-navy font-extrabold px-4 py-1.5 rounded-full text-xs md:text-sm shadow-lg border border-brand-blue">
+                        🎨 ¡Lleva cada balón a su aro del mismo color!
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- 5. MISIÓN 2 MINI-GAME: EL PASE AL NIDO -->
+            <section id="screen-mision2" class="screen-section hidden flex flex-col space-y-4">
+                <div class="bg-brand-navy text-white p-3.5 rounded-2xl shadow flex items-center justify-between border-l-8 border-brand-gold">
+                    <div>
+                        <span class="text-amber-400 text-xs font-extrabold uppercase">MISIÓN 2</span>
+                        <h2 class="text-xl md:text-2xl font-black leading-none">EL PASE AL NIDO</h2>
+                        <p class="text-xs text-blue-200 mt-0.5">¡Haz clic o toca la pantalla para patear el balón adentro del nido!</p>
+                    </div>
+                    <div class="bg-amber-400 text-slate-900 font-black px-3 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
+                        <span>Pases:</span>
+                        <span id="m2-score" class="text-base">0/3</span>
+                    </div>
+                </div>
+
+                <!-- GAME CANVAS 2 -->
+                <div class="relative w-full bg-emerald-600 rounded-2xl border-4 border-emerald-800 shadow-inner overflow-hidden flex flex-col items-center justify-center min-h-[380px]">
+                    <canvas id="canvas-mision2" class="w-full h-[380px] bg-emerald-600 rounded-xl cursor-pointer"></canvas>
+                    <div id="m2-msg" class="absolute top-4 bg-white/95 text-brand-navy font-extrabold px-4 py-1.5 rounded-full text-sm shadow border border-brand-blue">
+                        🎯 ¡Toca la pantalla para apuntar y hacer el pase!
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- 6. MISIÓN 3 MINI-GAME: GUARDIANES DEL EQUIPO -->
+            <section id="screen-mision3" class="screen-section hidden flex flex-col space-y-4">
+                <div class="bg-brand-navy text-white p-3.5 rounded-2xl shadow flex items-center justify-between border-l-8 border-brand-gold">
+                    <div>
+                        <span class="text-amber-400 text-xs font-extrabold uppercase">MISIÓN 3</span>
+                        <h2 class="text-xl md:text-2xl font-black leading-none">GUARDIANES DEL EQUIPO</h2>
+                        <p class="text-xs text-blue-200 mt-0.5">Arrastra cada balón de color a su aro del mismo color</p>
+                    </div>
+                    <div class="bg-emerald-500 text-white font-black px-3 py-1 rounded-xl text-xs flex items-center gap-1 shadow">
+                        <span>Aros:</span>
+                        <span id="m3-score" class="text-base">0/4</span>
+                    </div>
+                </div>
+
+                <!-- GAME CANVAS 3 -->
+                <div class="relative w-full bg-emerald-600 rounded-2xl border-4 border-emerald-800 shadow-inner overflow-hidden flex flex-col items-center justify-center min-h-[380px]">
+                    <canvas id="canvas-mision3" class="w-full h-[380px] bg-emerald-600 rounded-xl cursor-grab"></canvas>
+                    <div id="m3-msg" class="absolute top-4 bg-white/95 text-brand-navy font-extrabold px-4 py-1.5 rounded-full text-sm shadow border border-brand-blue">
+                        🎨 ¡Arrastra los balones a sus aros de color!
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- 7. REFLEXIÓN INTERACTIVA -->
+            <section id="screen-reflexion" class="screen-section hidden flex flex-col items-center justify-center space-y-6 max-w-3xl mx-auto w-full">
+                <div class="text-center space-y-1">
+                    <span class="bg-amber-300 text-amber-950 font-black px-4 py-1 rounded-full text-xs uppercase">Asamblea Final</span>
+                    <h2 class="text-3xl font-black text-brand-navy">LA ESTRELLA QUE APRENDÍ 🌟</h2>
+                    <p class="text-slate-600 text-sm">Responde estas sencillas preguntas con el entrenador</p>
+                </div>
+
+                <div class="w-full space-y-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-md border-2 border-brand-blue space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand-navy text-white font-extrabold flex items-center justify-center text-sm">1</span>
+                            <h3 class="font-extrabold text-slate-800 text-base md:text-lg">¿Cuál fue tu misión favorita?</h3>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2.5 pt-1">
+                            <button onclick="selectAnswer(this)" class="answer-btn p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:bg-blue-50 flex flex-col items-center gap-1 font-bold text-xs text-slate-700">
+                                <i class="fa-solid fa-shoe-prints text-2xl text-blue-600"></i>
+                                <span>Las Huellas</span>
+                            </button>
+                            <button onclick="selectAnswer(this)" class="answer-btn p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:bg-blue-50 flex flex-col items-center gap-1 font-bold text-xs text-slate-700">
+                                <i class="fa-solid fa-bullseye text-2xl text-emerald-600"></i>
+                                <span>El Nido</span>
+                            </button>
+                            <button onclick="selectAnswer(this)" class="answer-btn p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:bg-blue-50 flex flex-col items-center gap-1 font-bold text-xs text-slate-700">
+                                <i class="fa-solid fa-users text-2xl text-amber-600"></i>
+                                <span>Guardianes</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl shadow-md border-2 border-brand-blue space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand-navy text-white font-extrabold flex items-center justify-center text-sm">2</span>
+                            <h3 class="font-extrabold text-slate-800 text-base md:text-lg">¿Qué aprendiste hoy en la cancha?</h3>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <button onclick="selectAnswer(this)" class="answer-btn p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:bg-blue-50 flex items-center justify-center gap-2 font-bold text-sm text-slate-700">
+                                <i class="fa-solid fa-futbol text-xl text-amber-500"></i>
+                                <span>Llevar el balón suave</span>
+                            </button>
+                            <button onclick="selectAnswer(this)" class="answer-btn p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:bg-blue-50 flex items-center justify-center gap-2 font-bold text-sm text-slate-700">
+                                <i class="fa-solid fa-handshake text-xl text-blue-500"></i>
+                                <span>Compartir con amigos</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl shadow-md border-2 border-brand-blue space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand-navy text-white font-extrabold flex items-center justify-center text-sm">3</span>
+                            <h3 class="font-extrabold text-slate-800 text-base md:text-lg">¿Te gustaría volver a jugar?</h3>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <button onclick="selectAnswer(this)" class="answer-btn p-3 rounded-xl border-2 border-slate-200 bg-slate-50 hover:bg-emerald-50 flex items-center justify-center gap-2 font-bold text-base text-emerald-700">
+                                <i class="fa-solid fa-thumbs-up text-2xl text-emerald-500"></i>
+                                <span>¡SÍ!</span>
+                            </button>
+                            <button onclick="selectAnswer(this)" class="answer-btn p-3 rounded-xl border-2 border-amber-300 bg-amber-50 hover:bg-amber-100 flex items-center justify-center gap-2 font-bold text-base text-amber-800">
+                                <i class="fa-solid fa-rocket text-2xl text-amber-500"></i>
+                                <span>¡SUPER SÍ! 🚀</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="playSound('fanfare'); goToScreen('cierre');" class="w-full max-w-md bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-900 font-extrabold text-2xl py-4 px-6 rounded-2xl shadow-xl border-b-4 border-amber-800 flex items-center justify-center gap-3 active:scale-95">
+                    <span>IR A LA GRADUACIÓN</span>
+                    <i class="fa-solid fa-award text-3xl"></i>
+                </button>
+            </section>
+
+
+            <!-- 8. CIERRE & CEREMONIA DE DIPLOMA -->
+            <section id="screen-cierre" class="screen-section hidden flex flex-col items-center justify-center text-center space-y-6 max-w-2xl mx-auto w-full py-4">
+                <div class="space-y-1">
+                    <span class="bg-emerald-500 text-white font-black px-4 py-1 rounded-full text-xs uppercase">Graduación Águilas FC</span>
+                    <h2 class="text-3xl md:text-4xl font-black text-brand-navy uppercase">¡NUEVO GUARDIÁN DEL FÚTBOL!</h2>
+                </div>
+
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-2xl border-4 border-brand-gold relative w-full flex flex-col items-center space-y-5">
+                    
+                    <div class="flex justify-center gap-4 text-brand-gold text-4xl drop-shadow">
+                        <i class="fa-solid fa-star animate-bounce" style="animation-delay: 0.1s"></i>
+                        <i class="fa-solid fa-star animate-bounce" style="animation-delay: 0.2s"></i>
+                        <i class="fa-solid fa-star animate-bounce" style="animation-delay: 0.3s"></i>
+                    </div>
+
+                    <!-- Input Name for Kid Certificate -->
+                    <div class="w-full max-w-xs space-y-1">
+                        <label class="text-xs font-bold text-slate-600 uppercase">Escribe tu Nombre Campeón/a:</label>
+                        <input type="text" id="kid-name" value="Campeón Águila" oninput="updateDiplomaName()" class="w-full p-2.5 text-center font-extrabold text-xl text-brand-navy bg-amber-50 border-2 border-brand-gold rounded-xl outline-none focus:ring-2 focus:ring-brand-blue">
+                    </div>
+
+                    <!-- Ribbon Medal Graphic -->
+                    <div class="relative flex items-center justify-center my-1">
+                        <div class="shiny-gold w-36 h-36 rounded-full border-8 border-amber-300 shadow-2xl flex flex-col items-center justify-center relative z-10">
+                            <i class="fa-solid fa-shield-halved text-brand-navy text-4xl drop-shadow"></i>
+                            <span id="diploma-name" class="font-black text-brand-navy text-xs uppercase mt-1 px-2 truncate max-w-[120px]">Campeón Águila</span>
+                            <span class="font-extrabold text-amber-900 text-[10px]">GUARDIÁN ÁGUILAS FC</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 bg-blue-50 p-4 rounded-2xl border border-blue-200">
+                        <p class="text-slate-800 text-sm md:text-base leading-snug font-medium">
+                            "¡Felicitaciones! Hoy aprendiste, compartiste con tus compañeros y disfrutaste al máximo en la cancha. ¡Eres un verdadero guardián del fútbol!"
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 w-full">
+                        <button onclick="triggerConfetti(); playSound('applause');" class="flex-1 bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold py-3 px-4 rounded-xl shadow border-b-4 border-amber-700 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-hands-clapping text-xl"></i>
+                            <span>Celebrar con Aplausos</span>
+                        </button>
+                        <button onclick="openCoachPanel()" class="flex-1 bg-brand-navy hover:bg-blue-900 text-white font-extrabold py-3 px-4 rounded-xl shadow border-b-4 border-slate-950 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-clipboard-list text-xl text-amber-300"></i>
+                            <span>Registro del Profe</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="resetAdventure()" class="text-slate-400 hover:text-slate-200 text-sm font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>Volver a Jugar la Aventura</span>
+                </button>
+            </section>
+
+        </main>
+
+        <footer class="bg-slate-900 text-slate-300 px-4 py-2.5 text-xs flex flex-wrap items-center justify-between border-t border-slate-800 gap-2">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="font-semibold text-slate-200">Modo Interactivo Mini-Juegos</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span>Águilas FC Sub-5</span>
+                <button onclick="goToScreen('mapa')" class="underline hover:text-white">Mapa de Misiones</button>
+            </div>
+        </footer>
+
+    </div>
+
+
+    <!-- EVALUATION MODAL FOR COACH -->
+    <div id="modal-coach" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border-4 border-brand-navy overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-brand-navy text-white p-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-user text-amber-400 text-2xl"></i>
+                    <div>
+                        <h3 class="font-extrabold text-lg leading-tight">Evaluación Formativa (Entrenador)</h3>
+                        <p class="text-xs text-blue-200">Valoración cualitativa de participación y esfuerzo</p>
+                    </div>
+                </div>
+                <button onclick="closeCoachPanel()" class="text-white/80 hover:text-white text-2xl font-bold px-2">&times;</button>
+            </div>
+
+            <div class="p-5 overflow-y-auto space-y-4 text-slate-800 flex-1">
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-xl text-xs text-amber-900">
+                    <strong>Regla de Oro:</strong> En Águilas FC evaluamos la participación, el entusiasmo y la cooperación, jamás la precisión perfecta.
+                </div>
+
+                <div class="space-y-2.5">
+                    <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" checked class="w-5 h-5 mt-0.5 rounded text-brand-blue">
+                        <div>
+                            <span class="font-bold text-sm text-slate-800 block">Participación y Alegría</span>
+                            <span class="text-xs text-slate-500">Se divierte realizando los movimientos y mini-juegos.</span>
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" checked class="w-5 h-5 mt-0.5 rounded text-brand-blue">
+                        <div>
+                            <span class="font-bold text-sm text-slate-800 block">Esfuerzo Individual</span>
+                            <span class="text-xs text-slate-500">Persevera intentando completar cada misión.</span>
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" checked class="w-5 h-5 mt-0.5 rounded text-brand-blue">
+                        <div>
+                            <span class="font-bold text-sm text-slate-800 block">Compañerismo</span>
+                            <span class="text-xs text-slate-500">Respeta turnos y celebra con sus amigos.</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="bg-slate-100 p-4 border-t flex justify-end">
+                <button onclick="closeCoachPanel()" class="bg-brand-navy hover:bg-blue-900 text-white font-bold text-sm py-2 px-5 rounded-xl">
+                    Guardar y Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MINI-GAMES & LOGIC SCRIPT -->
+    <script>
+        // Global App State
+        const state = {
+            currentScreen: 'portada',
+            starsEarned: 0,
+            missionsCompleted: { 1: false, 2: false, 3: false },
+            audioEnabled: true
+        };
+
+        // Navigation
+        function goToScreen(screenId) {
+            document.querySelectorAll('.screen-section').forEach(s => s.classList.add('hidden'));
+            const target = document.getElementById(`screen-${screenId}`);
+            if (target) {
+                target.classList.remove('hidden');
+                state.currentScreen = screenId;
+            }
+            document.getElementById('app-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function updateDiplomaName() {
+            const inputVal = document.getElementById('kid-name').value;
+            document.getElementById('diploma-name').innerText = inputVal || 'Campeón';
+        }
+
+        function grantMissionStar(missionNum) {
+            if (!state.missionsCompleted[missionNum]) {
+                state.missionsCompleted[missionNum] = true;
+                state.starsEarned++;
+
+                // Header Stars
+                const hStar = document.getElementById(`star-header-${state.starsEarned}`);
+                if (hStar) hStar.classList.remove('opacity-30');
+
+                // Map Stars
+                const mStar = document.getElementById(`map-star-${missionNum}`);
+                if (mStar) mStar.classList.remove('hidden');
+
+                // Unlock Next Node on Map
+                if (missionNum < 3) {
+                    const nextNode = document.getElementById(`map-node-${missionNum + 1}`);
+                    const nextCard = document.getElementById(`map-card-${missionNum + 1}`);
+                    const nextIcon = document.getElementById(`map-icon-${missionNum + 1}`);
+                    if (nextNode) nextNode.classList.remove('opacity-60');
+                    if (nextCard) {
+                        nextCard.classList.remove('bg-slate-200', 'border-slate-400');
+                        nextCard.classList.add('bg-white', 'border-brand-blue');
+                    }
+                    if (nextIcon) {
+                        nextIcon.classList.remove('fa-lock', 'text-slate-500');
+                        if (missionNum === 1) nextIcon.classList.add('fa-bullseye', 'text-emerald-600');
+                        if (missionNum === 2) nextIcon.classList.add('fa-users', 'text-amber-600');
+                    }
+                }
+            }
+
+            triggerConfetti();
+            playSound('star');
+
+            setTimeout(() => {
+                if (missionNum === 3) goToScreen('reflexion');
+                else goToScreen('mapa');
+            }, 2000);
+        }
+
+        function startMission(num) {
+            if (num === 1 || state.missionsCompleted[num - 1]) {
+                playSound('click');
+                goToScreen(`mision${num}`);
+                if (num === 1) initMission1();
+                if (num === 2) initMission2();
+                if (num === 3) initMission3();
+            } else {
+                playSound('error');
+            }
+        }
+
+        function startCurrentUnlockedMission() {
+            if (!state.missionsCompleted[1]) startMission(1);
+            else if (!state.missionsCompleted[2]) startMission(2);
+            else if (!state.missionsCompleted[3]) startMission(3);
+            else goToScreen('reflexion');
+        }
+
+        function selectAnswer(btn) {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.answer-btn').forEach(b => {
+                b.classList.remove('border-brand-blue', 'bg-blue-100', 'ring-2');
+            });
+            btn.classList.add('border-brand-blue', 'bg-blue-100', 'ring-2');
+            playSound('pop');
+        }
+
+        function resetAdventure() {
+            state.starsEarned = 0;
+            state.missionsCompleted = { 1: false, 2: false, 3: false };
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`star-header-${i}`).classList.add('opacity-30');
+                document.getElementById(`map-star-${i}`).classList.add('hidden');
+            }
+            goToScreen('portada');
+        }
+
+
+        /* ========================================================
+           PITCH RENDERING HELPER (PREMIUM SOCCER FIELD DESIGN)
+        ======================================================== */
+        function drawPitchBackground(ctx, w, h) {
+            // Lawn stripes
+            const stripeCount = 8;
+            const stripeWidth = w / stripeCount;
+            for (let i = 0; i < stripeCount; i++) {
+                ctx.fillStyle = (i % 2 === 0) ? '#15803D' : '#166534';
+                ctx.fillRect(i * stripeWidth, 0, stripeWidth, h);
+            }
+
+            // White Pitch Markings
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.65)";
+            ctx.lineWidth = 4;
+
+            // Outer Boundary
+            ctx.strokeRect(10, 10, w - 20, h - 20);
+
+            // Center Line
+            ctx.beginPath();
+            ctx.moveTo(10, h / 2);
+            ctx.lineTo(w - 10, h / 2);
+            ctx.stroke();
+
+            // Center Circle
+            ctx.beginPath();
+            ctx.arc(w / 2, h / 2, Math.min(w, h) * 0.16, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Center Spot
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.beginPath();
+            ctx.arc(w / 2, h / 2, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Goal Area Top
+            ctx.strokeRect(w * 0.3, 10, w * 0.4, h * 0.15);
+            // Goal Area Bottom
+            ctx.strokeRect(w * 0.3, h - 10 - (h * 0.15), w * 0.4, h * 0.15);
+
+            // Corner Arcs
+            ctx.beginPath();
+            ctx.arc(10, 10, 15, 0, Math.PI / 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(w - 10, 10, 15, Math.PI / 2, Math.PI);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(10, h - 10, 15, Math.PI * 1.5, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(w - 10, h - 10, 15, Math.PI, Math.PI * 1.5);
+            ctx.stroke();
+        }
+
+        function resizeCanvas(canvas) {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width || 600;
+            canvas.height = 380;
+        }
+
+
+        /* ========================================================
+           MINI-GAME 1: EL CAMINO DE LAS HUELLAS (SLALOM & CHECKPOINTS)
+        ======================================================== */
+        let m1Canvas, m1Ctx, m1Dragging = false;
+        let m1Ball = { x: 50, y: 320, r: 18 };
+        let m1Star = { x: 300, y: 60, r: 25 };
+        let m1Cones = [];
+        let m1Checkpoints = [];
+        let m1CurrentCP = 0;
+
+        function initMission1() {
+            m1Canvas = document.getElementById('canvas-mision1');
+            m1Ctx = m1Canvas.getContext('2d');
+            resizeCanvas(m1Canvas);
+
+            const w = m1Canvas.width;
+            const h = m1Canvas.height;
+
+            m1Ball = { x: w * 0.15, y: h * 0.85, r: Math.min(w, h) * 0.048 };
+            m1Star = { x: w * 0.85, y: h * 0.15, r: Math.min(w, h) * 0.065 };
+            m1CurrentCP = 0;
+
+            // BONUS: Randomized cone positions X & Y (within realistic pitch bounds)
+            const cone1X = w * (0.32 + Math.random() * 0.14);
+            const cone1Y = h * (0.66 + (Math.random() * 0.08 - 0.04));
+
+            const cone2X = w * (0.62 + Math.random() * 0.14);
+            const cone2Y = h * (0.46 + (Math.random() * 0.08 - 0.04));
+
+            const cone3X = w * (0.32 + Math.random() * 0.14);
+            const cone3Y = h * (0.26 + (Math.random() * 0.08 - 0.04));
+
+            m1Cones = [
+                { x: cone1X, y: cone1Y },
+                { x: cone2X, y: cone2Y },
+                { x: cone3X, y: cone3Y }
+            ];
+
+            // Mandatory checkpoints dynamically matching randomized cone coordinates
+            m1Checkpoints = [
+                { x: Math.max(w * 0.12, cone1X - 48), y: cone1Y, r: 24, hit: false, id: 1 },
+                { x: Math.min(w * 0.88, cone2X + 48), y: cone2Y, r: 24, hit: false, id: 2 },
+                { x: Math.max(w * 0.12, cone3X - 48), y: cone3Y, r: 24, hit: false, id: 3 }
+            ];
+
+            m1Canvas.onmousedown = m1Start;
+            m1Canvas.onmousemove = m1Move;
+            m1Canvas.onmouseup = m1End;
+            m1Canvas.ontouchstart = (e) => m1Start(e.touches[0]);
+            m1Canvas.ontouchmove = (e) => { m1Move(e.touches[0]); e.preventDefault(); };
+            m1Canvas.ontouchend = m1End;
+
+            document.getElementById('m1-msg').innerText = "👇 Arrastra el balón y pasa por el Checkpoint 1";
+            drawM1();
+        }
+
+        function m1Start(e) {
+            const rect = m1Canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const dist = Math.hypot(mouseX - m1Ball.x, mouseY - m1Ball.y);
+            if (dist < m1Ball.r * 2.8) {
+                m1Dragging = true;
+            }
+        }
+
+        function m1Move(e) {
+            if (!m1Dragging) return;
+            const rect = m1Canvas.getBoundingClientRect();
+            m1Ball.x = e.clientX - rect.left;
+            m1Ball.y = e.clientY - rect.top;
+
+            // Check Checkpoint Progress
+            if (m1CurrentCP < m1Checkpoints.length) {
+                const cp = m1Checkpoints[m1CurrentCP];
+                const distCP = Math.hypot(m1Ball.x - cp.x, m1Ball.y - cp.y);
+                if (distCP < m1Ball.r + cp.r) {
+                    cp.hit = true;
+                    m1CurrentCP++;
+                    playSound('pop');
+                    if (m1CurrentCP < m1Checkpoints.length) {
+                        document.getElementById('m1-msg').innerText = `⭐ ¡Bien! Ahora ve al Checkpoint ${m1CurrentCP + 1}`;
+                    } else {
+                        document.getElementById('m1-msg').innerText = "🌟 ¡Genial! Ahora corre directo a la estrella";
+                    }
+                }
+            }
+
+            // Check Star Touch - ONLY VALID IF ALL CHECKPOINTS WERE CLEARED
+            const distStar = Math.hypot(m1Ball.x - m1Star.x, m1Ball.y - m1Star.y);
+            if (distStar < m1Ball.r + m1Star.r) {
+                if (m1CurrentCP >= m1Checkpoints.length) {
+                    m1Dragging = false;
+                    document.getElementById('m1-msg').innerText = "🌟 ¡ZIGZAG COMPLETO! ¡MISIÓN CUMPLIDA!";
+                    grantMissionStar(1);
+                } else {
+                    document.getElementById('m1-msg').innerText = "⚠️ ¡Primero debes pasar por todos los Checkpoints numerados!";
+                    playSound('error');
+                }
+            }
+
+            drawM1();
+        }
+
+        function m1End() { m1Dragging = false; }
+
+        function drawM1() {
+            const w = m1Canvas.width;
+            const h = m1Canvas.height;
+            m1Ctx.clearRect(0, 0, w, h);
+
+            // 1. Draw Field Background
+            drawPitchBackground(m1Ctx, w, h);
+
+            // 2. Draw Recommended Slalom Path Line
+            m1Ctx.beginPath();
+            m1Ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
+            m1Ctx.lineWidth = 6;
+            m1Ctx.setLineDash([10, 10]);
+            m1Ctx.moveTo(w * 0.15, h * 0.85);
+            m1Checkpoints.forEach(cp => m1Ctx.lineTo(cp.x, cp.y));
+            m1Ctx.lineTo(m1Star.x, m1Star.y);
+            m1Ctx.stroke();
+            m1Ctx.setLineDash([]);
+
+            // 3. Draw Checkpoints
+            m1Checkpoints.forEach((cp, idx) => {
+                m1Ctx.beginPath();
+                m1Ctx.arc(cp.x, cp.y, cp.r, 0, Math.PI * 2);
+                if (cp.hit) {
+                    m1Ctx.fillStyle = "rgba(16, 185, 129, 0.7)";
+                    m1Ctx.fill();
+                    m1Ctx.strokeStyle = "#FFFFFF";
+                    m1Ctx.lineWidth = 3;
+                    m1Ctx.stroke();
+                    m1Ctx.fillStyle = "#FFF";
+                    m1Ctx.font = "bold 16px sans-serif";
+                    m1Ctx.textAlign = "center";
+                    m1Ctx.textBaseline = "middle";
+                    m1Ctx.fillText("✓", cp.x, cp.y);
+                } else {
+                    const isNext = (idx === m1CurrentCP);
+                    m1Ctx.fillStyle = isNext ? "rgba(245, 158, 11, 0.85)" : "rgba(255, 255, 255, 0.4)";
+                    m1Ctx.fill();
+                    m1Ctx.strokeStyle = isNext ? "#FFFFFF" : "#CBD5E1";
+                    m1Ctx.lineWidth = isNext ? 4 : 2;
+                    m1Ctx.stroke();
+                    m1Ctx.fillStyle = isNext ? "#000" : "#475569";
+                    m1Ctx.font = "bold 14px sans-serif";
+                    m1Ctx.textAlign = "center";
+                    m1Ctx.textBaseline = "middle";
+                    m1Ctx.fillText(cp.id, cp.x, cp.y);
+                }
+            });
+
+            // 4. Draw Cones with Shadows
+            m1Cones.forEach(c => {
+                // Shadow
+                m1Ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
+                m1Ctx.beginPath();
+                m1Ctx.ellipse(c.x, c.y + 14, 18, 7, 0, 0, Math.PI * 2);
+                m1Ctx.fill();
+
+                // Cone Body
+                m1Ctx.fillStyle = "#F97316";
+                m1Ctx.beginPath();
+                m1Ctx.moveTo(c.x, c.y - 22);
+                m1Ctx.lineTo(c.x - 16, c.y + 14);
+                m1Ctx.lineTo(c.x + 16, c.y + 14);
+                m1Ctx.closePath();
+                m1Ctx.fill();
+
+                // Cone Stripe
+                m1Ctx.fillStyle = "#FFFFFF";
+                m1Ctx.beginPath();
+                m1Ctx.moveTo(c.x - 7, c.y - 2);
+                m1Ctx.lineTo(c.x + 7, c.y - 2);
+                m1Ctx.lineTo(c.x + 11, c.y + 5);
+                m1Ctx.lineTo(c.x - 11, c.y + 5);
+                m1Ctx.closePath();
+                m1Ctx.fill();
+            });
+
+            // 5. Draw Target Star
+            const starUnlocked = (m1CurrentCP >= m1Checkpoints.length);
+            m1Ctx.shadowColor = starUnlocked ? "#FFD700" : "transparent";
+            m1Ctx.shadowBlur = 15;
+            m1Ctx.fillStyle = starUnlocked ? "#FFD700" : "#94A3B8";
+            m1Ctx.font = `${m1Star.r * 2}px sans-serif`;
+            m1Ctx.textAlign = "center";
+            m1Ctx.textBaseline = "middle";
+            m1Ctx.fillText("⭐", m1Star.x, m1Star.y);
+            m1Ctx.shadowBlur = 0;
+
+            // 6. Draw Soccer Ball with Shadow
+            m1Ctx.fillStyle = "rgba(0,0,0,0.3)";
+            m1Ctx.beginPath();
+            m1Ctx.ellipse(m1Ball.x, m1Ball.y + m1Ball.r * 0.8, m1Ball.r * 0.9, m1Ball.r * 0.4, 0, 0, Math.PI * 2);
+            m1Ctx.fill();
+
+            m1Ctx.beginPath();
+            m1Ctx.arc(m1Ball.x, m1Ball.y, m1Ball.r, 0, Math.PI * 2);
+            m1Ctx.fillStyle = "#FFFFFF";
+            m1Ctx.fill();
+            m1Ctx.lineWidth = 2.5;
+            m1Ctx.strokeStyle = "#000000";
+            m1Ctx.stroke();
+            m1Ctx.fillStyle = "#000";
+            m1Ctx.font = `${m1Ball.r * 1.2}px sans-serif`;
+            m1Ctx.textAlign = "center";
+            m1Ctx.textBaseline = "middle";
+            m1Ctx.fillText("⚽", m1Ball.x, m1Ball.y);
+        }
+
+
+        /* ========================================================
+           MINI-GAME 2: EL PASE AL NIDO (CANVAS & PITCH DESIGN)
+        ======================================================== */
+        let m2Canvas, m2Ctx, m2Score = 0;
+        let m2Ball, m2Nest, m2Kicking = false;
+
+        function initMission2() {
+            m2Canvas = document.getElementById('canvas-mision2');
+            m2Ctx = m2Canvas.getContext('2d');
+            resizeCanvas(m2Canvas);
+            m2Score = 0;
+            document.getElementById('m2-score').innerText = `${m2Score}/3`;
+
+            resetM2Ball();
+
+            m2Canvas.onclick = m2Kick;
+            m2Canvas.ontouchstart = (e) => { m2Kick(e.touches[0]); };
+
+            drawM2();
+        }
+
+        function resetM2Ball() {
+            const w = m2Canvas.width;
+            const h = m2Canvas.height;
+            m2Ball = { x: w * 0.5, y: h * 0.8, r: 18, vx: 0, vy: 0 };
+            m2Nest = { x: w * 0.25 + Math.random() * (w * 0.5), y: h * 0.2, w: 90, h: 50 };
+            m2Kicking = false;
+        }
+
+        function m2Kick(e) {
+            if (m2Kicking) return;
+            const rect = m2Canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            const dx = clickX - m2Ball.x;
+            const dy = clickY - m2Ball.y;
+            const angle = Math.atan2(dy, dx);
+
+            m2Ball.vx = Math.cos(angle) * 14;
+            m2Ball.vy = Math.sin(angle) * 14;
+            m2Kicking = true;
+
+            playSound('whistle');
+            animateM2();
+        }
+
+        function animateM2() {
+            if (!m2Kicking) return;
+
+            m2Ball.x += m2Ball.vx;
+            m2Ball.y += m2Ball.vy;
+
+            // Check Nest Goal Collision
+            if (m2Ball.x > m2Nest.x && m2Ball.x < m2Nest.x + m2Nest.w &&
+                m2Ball.y > m2Nest.y && m2Ball.y < m2Nest.y + m2Nest.h) {
+                
+                m2Kicking = false;
+                m2Score++;
+                playSound('star');
+                document.getElementById('m2-score').innerText = `${m2Score}/3`;
+                document.getElementById('m2-msg').innerText = "🎉 ¡GOLAZO AL NIDO! ¡EXCELENTE PASE!";
+
+                if (m2Score >= 3) {
+                    grantMissionStar(2);
+                } else {
+                    setTimeout(resetM2Ball, 1000);
+                    setTimeout(() => drawM2(), 1050);
+                }
+                return;
+            }
+
+            // Out of bounds reset
+            if (m2Ball.y < 0 || m2Ball.x < 0 || m2Ball.x > m2Canvas.width || m2Ball.y > m2Canvas.height) {
+                m2Kicking = false;
+                document.getElementById('m2-msg').innerText = "¡Casi! Apunta de nuevo con cuidado hacia el nido";
+                setTimeout(resetM2Ball, 800);
+                setTimeout(() => drawM2(), 850);
+                return;
+            }
+
+            drawM2();
+            requestAnimationFrame(animateM2);
+        }
+
+        function drawM2() {
+            const w = m2Canvas.width;
+            const h = m2Canvas.height;
+            m2Ctx.clearRect(0, 0, w, h);
+
+            // 1. Draw Field Background
+            drawPitchBackground(m2Ctx, w, h);
+
+            // 2. Draw Eagle Nest Target
+            m2Ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            m2Ctx.beginPath();
+            m2Ctx.ellipse(m2Nest.x + m2Nest.w / 2, m2Nest.y + m2Nest.h / 2 + 8, m2Nest.w / 1.8, m2Nest.h / 2, 0, 0, Math.PI * 2);
+            m2Ctx.fill();
+
+            m2Ctx.fillStyle = "#78350F";
+            m2Ctx.beginPath();
+            m2Ctx.ellipse(m2Nest.x + m2Nest.w / 2, m2Nest.y + m2Nest.h / 2, m2Nest.w / 2, m2Nest.h / 2, 0, 0, Math.PI * 2);
+            m2Ctx.fill();
+            m2Ctx.lineWidth = 4;
+            m2Ctx.strokeStyle = "#FEF08A";
+            m2Ctx.stroke();
+
+            m2Ctx.fillStyle = "#FFD700";
+            m2Ctx.font = "bold 16px sans-serif";
+            m2Ctx.textAlign = "center";
+            m2Ctx.textBaseline = "middle";
+            m2Ctx.fillText("🪹 NIDO ÁGUILA", m2Nest.x + m2Nest.w / 2, m2Nest.y + m2Nest.h / 2);
+
+            // 3. Aim Line Guide
+            if (!m2Kicking) {
+                m2Ctx.beginPath();
+                m2Ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+                m2Ctx.lineWidth = 4;
+                m2Ctx.setLineDash([8, 8]);
+                m2Ctx.moveTo(m2Ball.x, m2Ball.y);
+                m2Ctx.lineTo(m2Nest.x + m2Nest.w / 2, m2Nest.y + m2Nest.h / 2);
+                m2Ctx.stroke();
+                m2Ctx.setLineDash([]);
+            }
+
+            // 4. Draw Ball
+            m2Ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+            m2Ctx.beginPath();
+            m2Ctx.ellipse(m2Ball.x, m2Ball.y + m2Ball.r * 0.8, m2Ball.r * 0.9, m2Ball.r * 0.4, 0, 0, Math.PI * 2);
+            m2Ctx.fill();
+
+            m2Ctx.beginPath();
+            m2Ctx.arc(m2Ball.x, m2Ball.y, m2Ball.r, 0, Math.PI * 2);
+            m2Ctx.fillStyle = "#FFFFFF";
+            m2Ctx.fill();
+            m2Ctx.lineWidth = 2.5;
+            m2Ctx.strokeStyle = "#000";
+            m2Ctx.stroke();
+            m2Ctx.fillStyle = "#000";
+            m2Ctx.font = `${m2Ball.r * 1.1}px sans-serif`;
+            m2Ctx.textAlign = "center";
+            m2Ctx.textBaseline = "middle";
+            m2Ctx.fillText("⚽", m2Ball.x, m2Ball.y);
+        }
+
+
+        /* ========================================================
+           MINI-GAME 3: GUARDIANES DEL EQUIPO (RANDOMIZED COLOR MATCH)
+        ======================================================== */
+        let m3Canvas, m3Ctx, m3Score = 0;
+        let m3Balls = [], m3Rings = [];
+        let m3SelectedBall = null;
+
+        function initMission3() {
+            m3Canvas = document.getElementById('canvas-mision3');
+            m3Ctx = m3Canvas.getContext('2d');
+            resizeCanvas(m3Canvas);
+            m3Score = 0;
+            document.getElementById('m3-score').innerText = `${m3Score}/4`;
+
+            const w = m3Canvas.width;
+            const h = m3Canvas.height;
+
+            const baseColors = [
+                { name: 'Rojo', code: '#EF4444' },
+                { name: 'Azul', code: '#3B82F6' },
+                { name: 'Amarillo', code: '#EAB308' },
+                { name: 'Verde', code: '#10B981' }
+            ];
+
+            // Shuffle color layout indices independently for Rings and Balls
+            const ringColors = [...baseColors].sort(() => Math.random() - 0.5);
+            const ballColors = [...baseColors].sort(() => Math.random() - 0.5);
+
+            // Rings at Top with randomized positions
+            m3Rings = ringColors.map((c, i) => ({
+                color: c.code,
+                name: c.name,
+                x: (w / 5) * (i + 1),
+                y: h * 0.28,
+                r: 32,
+                matched: false
+            }));
+
+            // Balls at Bottom with randomized initial positions
+            m3Balls = ballColors.map((c, i) => ({
+                color: c.code,
+                name: c.name,
+                x: (w / 5) * (i + 1),
+                y: h * 0.78,
+                homeX: (w / 5) * (i + 1),
+                homeY: h * 0.78,
+                r: 22,
+                matched: false
+            }));
+
+            m3Canvas.onmousedown = m3Start;
+            m3Canvas.onmousemove = m3Move;
+            m3Canvas.onmouseup = m3End;
+            m3Canvas.ontouchstart = (e) => m3Start(e.touches[0]);
+            m3Canvas.ontouchmove = (e) => { m3Move(e.touches[0]); e.preventDefault(); };
+            m3Canvas.ontouchend = m3End;
+
+            document.getElementById('m3-msg').innerText = "🎨 ¡Lleva cada balón a su aro del mismo color!";
+            drawM3();
+        }
+
+        function m3Start(e) {
+            const rect = m3Canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            m3Balls.forEach(b => {
+                if (!b.matched && Math.hypot(mouseX - b.x, mouseY - b.y) < b.r * 2.2) {
+                    m3SelectedBall = b;
+                    playSound('pop');
+                }
+            });
+        }
+
+        function m3Move(e) {
+            if (!m3SelectedBall) return;
+            const rect = m3Canvas.getBoundingClientRect();
+            m3SelectedBall.x = e.clientX - rect.left;
+            m3SelectedBall.y = e.clientY - rect.top;
+            drawM3();
+        }
+
+        function m3End() {
+            if (!m3SelectedBall) return;
+
+            // Check match with target ring
+            m3Rings.forEach(r => {
+                if (r.color === m3SelectedBall.color && Math.hypot(m3SelectedBall.x - r.x, m3SelectedBall.y - r.y) < r.r + 20) {
+                    m3SelectedBall.x = r.x;
+                    m3SelectedBall.y = r.y;
+                    m3SelectedBall.matched = true;
+                    r.matched = true;
+                    m3Score++;
+                    playSound('star');
+                    document.getElementById('m3-score').innerText = `${m3Score}/4`;
+
+                    if (m3Score >= 4) {
+                        document.getElementById('m3-msg').innerText = "🤝 ¡EXCELENTE COOPERACIÓN! ¡TODOS LOS AROS LISTOS!";
+                        grantMissionStar(3);
+                    }
+                }
+            });
+
+            if (!m3SelectedBall.matched) {
+                m3SelectedBall.x = m3SelectedBall.homeX;
+                m3SelectedBall.y = m3SelectedBall.homeY;
+            }
+
+            m3SelectedBall = null;
+            drawM3();
+        }
+
+        function drawM3() {
+            const w = m3Canvas.width;
+            const h = m3Canvas.height;
+            m3Ctx.clearRect(0, 0, w, h);
+
+            // 1. Draw Field Background
+            drawPitchBackground(m3Ctx, w, h);
+
+            // 2. Draw Target Rings
+            m3Rings.forEach(r => {
+                m3Ctx.beginPath();
+                m3Ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2);
+                m3Ctx.lineWidth = 6;
+                m3Ctx.strokeStyle = r.color;
+                m3Ctx.stroke();
+                m3Ctx.fillStyle = r.color + "44";
+                m3Ctx.fill();
+            });
+
+            // 3. Draw Colored Soccer Balls
+            m3Balls.forEach(b => {
+                // Ball Shadow
+                m3Ctx.fillStyle = "rgba(0,0,0,0.3)";
+                m3Ctx.beginPath();
+                m3Ctx.ellipse(b.x, b.y + b.r * 0.8, b.r * 0.9, b.r * 0.4, 0, 0, Math.PI * 2);
+                m3Ctx.fill();
+
+                // Ball Outer Body
+                m3Ctx.beginPath();
+                m3Ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                m3Ctx.fillStyle = b.color;
+                m3Ctx.fill();
+                m3Ctx.lineWidth = 3;
+                m3Ctx.strokeStyle = "#FFFFFF";
+                m3Ctx.stroke();
+
+                // Ball Center Icon
+                m3Ctx.fillStyle = "#FFF";
+                m3Ctx.font = `${b.r * 1.1}px sans-serif`;
+                m3Ctx.textAlign = "center";
+                m3Ctx.textBaseline = "middle";
+                m3Ctx.fillText("⚽", b.x, b.y);
+            });
+        }
+
+
+        /* ========================================================
+           AUDIO SYNTHESIZER & HELPERS
+        ======================================================== */
+        function toggleAudio() {
+            state.audioEnabled = !state.audioEnabled;
+            const btn = document.getElementById('sound-icon');
+            btn.className = state.audioEnabled ? "fa-solid fa-volume-high text-lg" : "fa-solid fa-volume-xmark text-lg";
+        }
+
+        function speakInstruction(text) {
+            if (!state.audioEnabled || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function playSound(type) {
+            if (!state.audioEnabled) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+
+                if (type === 'whistle') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(2200, now);
+                    osc.frequency.exponentialRampToValueAtTime(1800, now + 0.25);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'star') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.3);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'pop') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'click') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(300, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.04);
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.setValueAtTime(140, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'fanfare') {
+                    playSound('star');
+                    setTimeout(() => playSound('whistle'), 300);
+                }
+            } catch (err) {
+                // AudioContext fallback ignored
+            }
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function openCoachPanel() {
+            document.getElementById('modal-coach').classList.remove('hidden');
+        }
+
+        function closeCoachPanel() {
+            document.getElementById('modal-coach').classList.add('hidden');
+        }
+
+        // Window resize listener to keep canvas responsive
+        window.addEventListener('resize', () => {
+            if (state.currentScreen === 'mision1') initMission1();
+            if (state.currentScreen === 'mision2') initMission2();
+            if (state.currentScreen === 'mision3') initMission3();
+        });
+    </script>
+</body>
+</html>
